@@ -1,0 +1,46 @@
+name: Docker Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-flask
+    
+    - name: Test application
+      run: |
+        python -c "from app import app; assert app is not None"
+    
+    - name: Build Docker image
+      run: docker build -t app_horaire .
+    
+    - name: Run Docker container
+      run: |
+        docker run -d -p 5000:5000 --name test_container app_horaire
+        sleep 5
+    
+    - name: Test if application is running
+      run: |
+        curl -f http://localhost:5000 || exit 1
+    
+    - name: Clean up
+      run: |
+        docker stop test_container
+        docker rm test_container
