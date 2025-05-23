@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  horaires-app:
+    build: .
+    container_name: gestion-horaires
+    ports:
+      - "5000:5000"
+    volumes:
+      - horaires-data:/app/data
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
+
+volumes:
+  horaires-data:
+    driver: local
